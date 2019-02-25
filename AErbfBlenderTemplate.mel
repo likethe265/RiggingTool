@@ -1,0 +1,654 @@
+
+global proc AErbfBlenderTemplate ( string $nodeName )
+{
+	AEswatchDisplay $nodeName;
+	editorTemplate -beginScrollLayout;
+
+		editorTemplate -beginLayout "Input / Ouput" -collapse 0;
+    
+            editorTemplate -callCustom "inputsBuild" "inputsUpdate" "inputsCompound"  ; 
+            editorTemplate -callCustom "lookupBuild" "lookupUpdate" "lookup"  ; 
+            editorTemplate -callCustom "outputBuild" "outputsUpdate" "output"  ; 
+            editorTemplate -callCustom "tuningBuild" "tuningUpdate" "tuningValue"  ; 
+            
+		editorTemplate -endLayout;
+
+	// include/call base class/node attributes
+	AEdependNodeTemplate $nodeName;
+
+	editorTemplate -addExtraControls;
+	editorTemplate -endScrollLayout;
+}
+
+
+global proc addElement( string $attr ){
+
+    int $arrayIndices[] = `getAttr -multiIndices $attr` ;
+    
+    string $buffer[] = {}; 
+    tokenize $attr "." $buffer; 
+    int $numElements = `getAttr ($buffer[0]+".numInputGroups")`; 
+    int $lastElement = $numElements-1; 
+    
+    // we allow for sparse array indices here by getting the last INDEX in the arrayInidices and adding 1
+    // otherwise we end up adding an invalid index if we simply use the length of the array. 
+    // however if the length of the multiIndices is zero, then the user simply hasn't added anything
+    // so we just want to start at index 0
+    
+    int $addIndex = 0; 
+    if ( $numElements > 0 ){
+      $addIndex = $arrayIndices[$lastElement] +1; 
+    }
+    
+    string $plugName = ( $attr + "[" + ($addIndex) + "]" ) ; 
+    
+    // create a new plug by accessing it
+    catchQuiet( `getAttr -type $plugName`);
+    
+    setAttr ($buffer[0]+".numInputGroups") ($numElements+1); 
+    
+    // force the AE update
+    inputsUpdate( $attr ) ; 
+    
+}
+
+
+global proc removeRowAE( string $attr, string $button ){
+
+  //psudeo
+  // use the button
+  // get the parent ( rowLayout )
+  // get the parent ( input group column layout )
+  // get the parent ( main column layout )
+  // get the index of the rowLayout, and subtract 1
+  // this is the array element we need to remove
+  // remove using
+  //string $plugName = ($nodeName+"."+$attributeName+"["+$elementIndex+"]");
+  //removeMultiInstance -break true $plugName;
+
+  // delete the input group column layout
+  // update the controlConnections if necessasary (probably will be! )
+
+  string $rowLayout = `button -q -parent $button` ; 
+  string $inputGroup_cl = `rowLayout -q -parent $rowLayout` ; 
+  string $main_cl = `columnLayout -q -parent $inputGroup_cl` ; 
+  string $main_cl_children[] = `columnLayout -q -childArray $main_cl` ; 
+  
+  int $indexOfInputGrp = -1; 
+  int $i = 0; 
+  for ($i=1; $i<size($main_cl_children); $i++ ){
+    
+    $testInputGrp_cl = `columnLayout -q -fullPathName $main_cl_children[$i]` ;
+
+    if( $testInputGrp_cl == $inputGroup_cl ){
+      $indexOfInputGrp = $i; 
+    }
+  }
+  
+  $indexOfInputGrp --; // allow for the button
+  
+  // allow for sparse array index  
+  int $currCompoundArrayIndices[] = `getAttr -mi ( $attr )`; 
+  int $sparseArrayIndex = $currCompoundArrayIndices[$indexOfInputGrp]; 
+  
+  string $compoundName = ( $attr + "["+$sparseArrayIndex+"]");
+  removeMultiInstance -break true $compoundName;
+  
+  deleteUI $inputGroup_cl; 
+  
+  
+  // set this attribute on the node itself. we look up this number
+  // in the compute function, rather than query the length of the array
+  // because the length of the array often does not reflect the number
+  // of valid array elements. for instance when you connect to the last 
+  // element in the array  node1.attr[4] for instance, maya will build 
+  // another array element at node1.attr[5] automatically, which screws 
+  // up stuff later on. 
+  string $buffer[] = {}; 
+  tokenize $attr "." $buffer; 
+  int $numElements = `getAttr ($buffer[0]+".numInputGroups")`; 
+  setAttr ($buffer[0]+".numInputGroups") ($numElements-1 ); 
+  
+  int $deletedIndices[] = `getAttr -mi ($buffer[0]+".deletedIndices") `; 
+  int $lastIndex = `size($deletedIndices)`;
+  setAttr ($buffer[0]+".deletedIndices[" + $lastIndex + "]") $sparseArrayIndex ; 
+  
+}
+
+
+global proc addInputGrpAE( string $attr, 
+                      string $parentLayout, 
+                      int $numElementsPerDataPoint, 
+                      int $numElementsPerSample, 
+                      int $AEWidth, 
+                      int $majorCCIndex  ){
+                                
+  setParent $parentLayout; 
+  
+  
+  // create new input grp  
+  // |---------------------- newInputsGrp_cl[0] ---------------------------| 
+  // ||--------------------- newDataPointRow -----------------------------||
+  // ||       datapoint          datapoint       datapoint      rbicon    ||
+  // ||-------------------------------------------------------------------||
+  // ||--------------------- newSamplePointRow ---------------------------||
+  // ||       sample      sample       sample       sample                ||
+  // ||-------------------------------------------------------------------||                                                                     |
+  // |---------------------------------------------------------------------|
+  // |---------------------- newInputsGrp_cl[1]----------------------------| 
+  // ||--------------------- newDataPointRow -----------------------------||
+  // ||       datapoint          datapoint       datapoint      rbicon    ||
+  // ||-------------------------------------------------------------------||
+  // ||--------------------- newSamplePointRow ---------------------------||
+  // ||       sample      sample       sample       sample                ||
+  // ||-------------------------------------------------------------------||                                                                     |
+  // |---------------------------------------------------------------------|
+  
+  string $newInputsGroup_cl = `columnLayout -w $AEWidth` ; 
+  setParent $newInputsGroup_cl ; 
+     
+    // ---------------------------------- data point AE construction -------------------------------------------- // 
+    
+      string $newDataPointRow = `rowLayout -nc ($numElementsPerDataPoint+1)` ; // add 1 for the rubbish bin button
+        setParent $newDataPointRow;
+        
+        // allow for sparse array indices
+        int $sparseArrayIndices[] = `getAttr -mi $attr`; 
+        int $majorCCIndex = $sparseArrayIndices[$majorCCIndex]; 
+        
+        // format the new row based on input data
+        int $j = 0;     
+        int $columnWidth = ($AEWidth - 30)/$numElementsPerDataPoint ; 
+        for( $j = 0; $j < $numElementsPerDataPoint; $j++ ) {
+            rowLayout -e -columnWidth ($j+1) $columnWidth $newDataPointRow; 
+            string $newFloatField = `floatField -w $columnWidth` ; 
+            
+            connectControl $newFloatField ( $attr + "[" + $majorCCIndex + "]." + "dataPoint" + "[" + $j + "]" );
+        }
+        
+        rowLayout -e -columnWidth ($numElementsPerDataPoint+1) 30 $newDataPointRow;   // 30 pixels for rubbish bin icon
+        
+        $rmvBtn = `symbolButton -image "removeRenderable.png" `; 
+        string $removeCmd = "removeRowAE(\"" + $attr + "\", \"" + $rmvBtn + "\" ); "   ; 
+        symbolButton -e -c $removeCmd $rmvBtn ; 
+      
+      
+    // ---------------------------------- sample AE construction -------------------------------------------- //  
+    setParent $newInputsGroup_cl ; 
+
+    string $newSampleRow = `rowLayout -nc ($numElementsPerSample+1)` ; // add 1 for the rubbish bin button
+    
+      setParent $newSampleRow;
+      // format the new row based on input data
+      int $k = 0;     
+      int $columnWidth = ($AEWidth - 30)/$numElementsPerSample ; 
+      for( $k = 0; $k < $numElementsPerSample; $k++ ) {
+          rowLayout -e -columnWidth ($k+1) $columnWidth $newSampleRow; 
+          string $newFloatField = `floatField -w $columnWidth` ; 
+          connectControl $newFloatField ( $attr + "[" + $majorCCIndex + "]." + "sample" + "[" + $k + "]" );
+      }
+      
+      rowLayout -e -columnWidth ($numElementsPerSample+1) 30 $newSampleRow;   // 30 pixels for rubbish bin icon  (empty for sample row)
+      
+      
+    // ---------------------------------- spacer for formatting at end -------------------------------------------- // 
+      
+    setParent $newInputsGroup_cl ;  
+    separator -width $AEWidth -height 25 ; 
+}
+
+
+global proc removeSampleDimension( string $attr ){
+  
+  // psudedocode
+  // get the children of CompoundLayout, these are the input groups (column layouts)
+  // get the children of each input group. these are rows.  dataPoint, sample, spacer
+  // delete the sampe, spacer "controls"
+  // rebuild them (with correct number of samples)
+  // make sure to remove the last element of the sample Array.  ".inputCompound[0].sample[3]" for eg
+  // connect the controls
+  
+  int $AEWidth = (400 - 30); 
+  int $sparseArrayIndices[] = `getAttr -mi $attr`; 
+  
+  string $buffer[] = {}; 
+  tokenize $attr "." $buffer; 
+  int $numSampleDimensions = `getAttr ($buffer[0]+".numSampleDimensions")` ;  
+  
+  // do bullet proofing here. don't let the user go lower than 2 sample elements. 
+  
+  if ( $numSampleDimensions > 1 ){
+    
+    int $columnWidth = ($AEWidth / ($numSampleDimensions-1) ); 
+  
+    setAttr ($buffer[0]+".numSampleDimensions") ($numSampleDimensions-1); 
+  
+    string $inputGroups[] = `columnLayout -q -childArray CompoundLayout` ; 
+    int $i= 0; 
+    
+    for( $i= 1; $i<size($inputGroups) ; $i++  ){
+      string $rows[] = `columnLayout -q -childArray $inputGroups[$i]`; 
+      deleteUI $rows[1]; 
+      deleteUI $rows[2];       
+      int $sparseIndex = $sparseArrayIndices[($i-1)]; 
+      setParent $inputGroups[$i]; 
+      string $newRow = `rowLayout -nc ($numSampleDimensions)`; 
+      int $j = 0; 
+      for ( $j=0 ; $j< $numSampleDimensions-1 ; $j++  ){
+        rowLayout -e -cw ($j+1) $columnWidth $newRow; 
+        string $newFF = `floatField -w $columnWidth ` ; 
+        connectControl $newFF ( $attr + "[" + $sparseIndex + "]." + "sample" + "[" + $j + "]" );  //the attribute is one more than the variable.        
+      }
+      
+      string $elementToRemove = ( $attr + "["+$sparseIndex+"].sample[" + ($numSampleDimensions-1) + "]" ); 
+      removeMultiInstance -break true $elementToRemove;
+      
+      setParent $inputGroups[$i];   
+      separator -width $AEWidth -height 25 ;
+  
+    }
+    
+    // -------------------------- do output ------------------------------------ //
+    
+    string $outputRows[] = `columnLayout -q -childArray OutputColumnLayout`; 
+    deleteUI $outputRows[1]; 
+    setParent OutputColumnLayout; 
+    
+    string $newOutputRow = `rowLayout -nc ($numSampleDimensions-1)`; 
+    setParent $newOutputRow; 
+    
+    int $k = 0; 
+    
+    
+    for( $k=0 ; $k< ($numSampleDimensions-1) ; $k++ ){
+      $newFF = `floatField `; 
+      rowLayout -e -cw ($k+1) $columnWidth $newOutputRow;
+      connectControl $newFF ( $buffer[0] + ".output[" + $k   + "]" );
+    }
+    rowLayout -e -cw ($numSampleDimensions-1) 30 $newOutputRow; // legacy from inputs build, but makes ui clean.  
+    
+    $elementToRemove = ( $buffer[0] + ".output[" + ($numSampleDimensions-1) + "]" ); 
+    removeMultiInstance -break true $elementToRemove;
+    
+  }
+}
+
+
+global proc addSampleDimension( string $attr ){
+
+  int $AEWidth = (400 - 30); 
+
+  string $buffer[] = {}; 
+  tokenize $attr "." $buffer; 
+  int $numSampleDimensions = `getAttr ($buffer[0]+".numSampleDimensions")` ;  
+  
+  setAttr ($buffer[0]+".numSampleDimensions") ($numSampleDimensions+1); 
+  
+  // pusedocode
+  // get the children of CompoundLayout
+  // these are the input groups (apart from the first one at element 0, this a rowlayout for buttons)
+  // for input group (its a column layout)
+  // get the children, these are the rows
+  // we are intersted in the second row, these are the sample float fields
+  // Maya doesn't allow altering the number of columns in a rowLayout, so we delete and rebuild it.
+  // connect the controls
+  
+  // allow for sparse array indices when doing control connection
+  int $sparseArrayIndices[] = `getAttr -mi $attr`; 
+  
+  int $columnWidth = ($AEWidth / ($numSampleDimensions+1) ); 
+  
+  string $inputGroups[] = `columnLayout -q -childArray CompoundLayout`; 
+  int $i = 1; 
+  for ( $i=1; $i<size($inputGroups) ; $i++ ){
+    string $rows[] = `columnLayout -q -childArray $inputGroups[$i]`; 
+    string $floatFields[] = `rowLayout -q -childArray $rows[1]`; 
+    int $numFloatFields = size($floatFields); 
+    int $sparseIndex = $sparseArrayIndices[($i-1)]; 
+    
+    // create a new float field and connect it to the attr (there by creating it...?)
+    // this is not possible apparently. have to delete and rebuild it. 
+    // do formatting stuff
+    setParent $inputGroups[$i]; 
+    deleteUI $rows[1]; 
+    deleteUI $rows[2]; // delete the spacer too.  
+    string $newRow = `rowLayout -nc ($numSampleDimensions+1)`; 
+    setParent $newRow; 
+    
+    int $j = 0; 
+    for ( $j=0; $j<($numSampleDimensions+1) ; $j++ ){  // now we have an extra float field 
+      rowLayout -e -cw ($j+1) $columnWidth  $newRow; 
+      string $newFF = `floatField -w $columnWidth ` ; 
+      connectControl $newFF ( $attr + "[" + $sparseIndex + "]." + "sample" + "[" + $j + "]" );  //the attribute is one more than the variable.
+    }
+    rowLayout -e -cw ($numSampleDimensions+1) 30 $newRow;   // 30 pixels for rubbish bin icon  (empty for sample row)
+    setParent $inputGroups[$i];   
+    separator -width $AEWidth -height 25 ;
+        
+  }
+  
+  // -------------------------- do output ------------------------------------ //
+  
+  string $outputRows[] = `columnLayout -q -childArray OutputColumnLayout`; 
+  deleteUI $outputRows[1]; 
+  setParent OutputColumnLayout; 
+  
+  string $newOutputRow = `rowLayout -nc ($numSampleDimensions+1)`; 
+  setParent $newOutputRow; 
+  
+  int $k = 0; 
+  
+  for( $k=0 ; $k< ($numSampleDimensions+1) ; $k++ ){
+    $newFF = `floatField -w $columnWidth`; 
+    rowLayout -e -cw ($k+1) $columnWidth $newOutputRow;
+    connectControl $newFF ( $buffer[0] + ".output[" + $k + "]" );
+  }
+  rowLayout -e -cw ($numSampleDimensions+1) 30 $newOutputRow; // legacy from inputs build, but makes ui clean.  
+  
+
+}
+
+
+global proc tuningBuild( string $attr ){
+  
+  int $AEWidth = 400; 
+  
+  columnLayout -w $AEWidth -cal "left" TuningColumnLayout;  
+  setParent TuningColumnLayout; 
+  text -l "  Tuning Value: " -h 30 ; 
+  string $tuning_rl = `rowLayout -w $AEWidth -nc 3 `; 
+  setParent $tuning_rl; 
+  string $ff = `floatField `;   
+  connectControl $ff $attr; 
+
+}
+
+global proc tuningUpdate( string $attr ){
+
+  setParent TuningColumnLayout;
+  string $cl_children[] = `columnLayout -q -childArray TuningColumnLayout`; 
+  string $rl_children[] = `rowLayout -q -childArray $cl_children[1]`; 
+  connectControl $rl_children[0]  $attr; 
+
+}
+
+
+
+global proc lookupBuild( string $attr ){
+
+  int $numDataPointDimensions = 3; 
+  
+  int $AEWidth = 400 ;  
+  
+  string $lookup_cl = `columnLayout -w $AEWidth LookupColumnLayout`; 
+  setParent $lookup_cl; 
+  text -label "  Look up values: " -h 30 ; 
+  string $lookup_rl = `rowLayout -nc 3 `; 
+  setParent $lookup_rl; 
+  
+  int $columnWidth = ($AEWidth -30) / 3; 
+  int $i = 0; 
+  for ( $i=0; $i< 3 ; $i++ ){
+    string $newFF = `floatField -w $columnWidth `; 
+    rowLayout -e -cw ($i+1) $columnWidth $lookup_rl;
+    connectControl $newFF ( $attr + "[" + $i + "]" );
+  }
+  rowLayout -e -columnWidth ($numDataPointDimensions+1) 30 $lookup_rl;
+}
+
+
+global proc lookupUpdate( string $attr ){
+  
+  string $rows[] = `columnLayout -q -childArray LookupColumnLayout`; 
+  string $floatFields[] = `rowLayout -q -childArray $rows[1]`; 
+  int $i = 0; 
+  for ( $i=0; $i< 3 ; $i++ ){
+    connectControl $floatFields[$i] ( $attr + "[" + $i + "]" );
+  }
+  
+}
+
+
+global proc outputBuild( string $attr ){
+
+  int $AEWidth = 400 ;  
+  string $buffer[] = {}; 
+  tokenize $attr "." $buffer; 
+  int $numSampleDimensions = `getAttr ($buffer[0]+".numSampleDimensions")` ;  
+  
+  columnLayout OutputColumnLayout; 
+  setParent OutputColumnLayout; 
+  
+  text -label "  Output: " -height 30 ; 
+  
+  rowLayout -nc ($numSampleDimensions+1) OutputRowLayout; 
+  setParent OutputRowLayout; 
+  
+  int $columnWidth = ($AEWidth -30) / $numSampleDimensions; 
+  
+  int $i = 0; 
+  for( $i=0 ; $i< $numSampleDimensions ; $i++ ){
+    $newFF = `floatField `; 
+    rowLayout -e -cw ($i+1) $columnWidth OutputRowLayout;
+    connectControl $newFF ( $attr + "[" + $i + "]" );
+  }
+  rowLayout -e -columnWidth ($numSampleDimensions+1) 30 OutputRowLayout; // legacy from inputs build, but makes ui clean.  
+}
+
+
+global proc outputsUpdate( string $attr ){
+  
+  int $AEWidth = 400 ;  
+  string $buffer[] = {}; 
+  tokenize $attr "." $buffer; 
+  int $numSampleDimensions = `getAttr ($buffer[0]+".numSampleDimensions")` ;  
+  
+  string $outputRows[] = `columnLayout -q -childArray OutputColumnLayout`; 
+  deleteUI $outputRows[1]; 
+  setParent OutputColumnLayout; 
+  string $newRow = `rowLayout -nc ($numSampleDimensions+1)` ; 
+  
+  int $columnWidth = ($AEWidth -30) / $numSampleDimensions; 
+    
+  int $i = 0; 
+  for( $i=0 ; $i< $numSampleDimensions ; $i++ ){
+    $newFF = `floatField -w $columnWidth  `; 
+    rowLayout -e -cw ($i+1) $columnWidth $newRow;
+    connectControl $newFF ( $attr + "[" + $i + "]" );
+  }
+  
+  rowLayout -e -columnWidth ($numSampleDimensions+1) 30 $newRow; // legacy from inputs build, but makes ui clean.  
+  
+  
+}
+
+
+global proc inputsBuild(string $attr){  
+  
+  int $AEWidth = 400 ;  
+  int $AEWidth1 = $AEWidth -30 ;  
+  int $numElementsDataPoint = 3; // in future we will read these numbers from the node itself
+  string $buffer[] = {}; 
+  tokenize $attr "." $buffer; 
+  int $numSampleDimensions = `getAttr ($buffer[0]+".numSampleDimensions")` ;    
+  
+  // build buttons at top
+  string $compoundLayout = `columnLayout -w $AEWidth CompoundLayout`; 
+  setParent $compoundLayout; 
+  
+  string $rowLayoutForButtons = `rowLayout -nc 3`; 
+  rowLayout -e -height 60 -columnWidth 1 (($AEWidth1/5)*3) -columnWidth 2 ($AEWidth1/5) -columnWidth 3 ($AEWidth1/5) $rowLayoutForButtons; 
+  
+  string $command = "addElement( \""+$attr+"\" )"; 
+  button -label "Add DataPoint/Sample" -c $command -w (($AEWidth1/5)*3) UpdateButton ;
+  
+  string $addSampleCmd = "addSampleDimension( \""+$attr+"\" )";
+  button -label "+ Sample " -c $addSampleCmd -w ($AEWidth1/5) UpSampleCountBtn ;
+  
+  string $removeSampleCmd = "removeSampleDimension( \""+$attr+"\" )";
+  button -label "- Sample " -c $removeSampleCmd -w ($AEWidth1/5) DownSampleCountBtn ;
+  
+  // get number of array elements and display them in the attribute editor
+  int $coumpoundArrayIndices[] = `getAttr -multiIndices $attr` ;
+  int $numCompounds = size($coumpoundArrayIndices); 
+  
+  for( $i = 0; $i < $numCompounds; $i++ ){
+    addInputGrpAE( $attr, "CompoundLayout", $numElementsDataPoint, $numSampleDimensions, $AEWidth, $i ); 
+  }
+  
+    
+}
+
+
+global proc inputsUpdate(string $attr){  
+  
+  int $AEWidth = 400 ;  
+  int $numElementsDataPoint = 3; // in future we will read these numbers from the node itself
+  
+  string $buffer[] = {}; 
+  tokenize $attr "." $buffer; 
+  int $numSampleDimensions = `getAttr ($buffer[0]+".numSampleDimensions")` ;    
+  
+  
+  // update the command on the buttons to reflect the correct node instance
+  string $command = "addElement( \""+$attr+"\" )"; 
+  button -e -c $command UpdateButton ; 
+  
+  string $addSampleCmd = "addSampleDimension( \""+$attr+"\" )";
+  button -e -c $addSampleCmd UpSampleCountBtn ; 
+  
+  string $removeSampleCmd = "removeSampleDimension( \""+$attr+"\" )";
+  button -e -c $removeSampleCmd DownSampleCountBtn ; 
+  
+  // get attriubte array element information
+  int $coumpoundArrayIndices[] = `getAttr -multiIndices $attr` ;
+  string $buffer[] = {}; 
+  tokenize $attr "." $buffer; 
+  int $numCompounds = `getAttr ($buffer[0]+".numInputGroups")`; 
+  
+  int $numInputGroups = `columnLayout -q -numberOfChildren CompoundLayout`;  
+  $numInputGroups = $numInputGroups - 1; //subtract 1 because of the button
+  
+  
+  // --------------------   do adding of rows if necessary ----------------------- //
+  
+  int $moreElements = $numCompounds-$numInputGroups; 
+  if  ($moreElements >0 ) {
+    
+    for( $i = 0; $i < $moreElements; $i++ ){
+      addInputGrpAE( $attr, "CompoundLayout", $numElementsDataPoint, $numSampleDimensions, $AEWidth, ($numInputGroups+$i)   ); 
+    }
+  }
+  
+  
+  // -----------------  do removing of inputGroups if necessary ----------------------- //
+  
+  // check to see if there's too many UI elements for this particular node
+  // important that we refresh the number of children
+  
+  // $coumpoundArrayIndices = `getAttr -multiIndices $attr` ;
+  // $numCompounds = size($coumpoundArrayIndices); 
+  
+  $numInputGroups = `columnLayout -q -numberOfChildren CompoundLayout` -1;  //subtract 1 for the button
+  int $numMoreChildren = ($numInputGroups - $numCompounds);
+  int $count = 0; 
+  if ( $numMoreChildren > 0 ){
+    string $inputGroups[] = `columnLayout -q -childArray CompoundLayout` ; 
+    int $n = 0; 
+    for( $n = $numCompounds+1; $n < $numCompounds+1+$numMoreChildren; $n++ ){   //add 1 to allow for the first row (the button) which we don't delete
+      $count++; 
+      deleteUI $inputGroups[$n];
+    }
+  }
+  
+  
+  // once we have the correct amount of inputGroups.. 
+  // update the control connections for each floatField to reflect the correct node instance
+  // unfortunately because of sparse arrays, we have to keep track of the actual indicies 
+  // of the attribute array we're actually want to update. 
+  
+  
+  string $currInputGroups[] = `columnLayout -q -childArray CompoundLayout` ; 
+  $numInputGroups = size( $currInputGroups ); 
+  
+  int $currCompoundArrayIndices[] = `getAttr -mi $attr `; 
+  
+  if( $numInputGroups > 1 ){   // greater than one because of button at top
+  
+    int $m = 1; 
+    for ( $m=1; $m < $numInputGroups; $m++ ){
+      
+      string $rows[] = `columnLayout -q -childArray $currInputGroups[$m]` ; 
+      string $dp_floatFields[] = `rowLayout -q -childArray $rows[0]` ; 
+      
+      // ------------------------- update data points --------------------------- //
+      // get correct index from sparse array
+      int $sparseIndex = $currCompoundArrayIndices[$m-1]; 
+      int $o = 0; 
+      for ( $o=0; $o < $numElementsDataPoint; $o++ ){
+        connectControl $dp_floatFields[$o] ( $attr + "[" + $sparseIndex + "]." + "dataPoint" + "[" + $o + "]" );
+      }
+      
+      
+      // ------------------------- update samples ------------------------------- //
+      // this will require wiping out the samples rowLayout, and the spacer, and rebuilding. 
+      // why? beacuse different nodes might have different sample counts. 
+      // since we can't adjust the number of columns in a rowColumn layout, we must rebuild it
+      
+      string $rows[] = `columnLayout -q -childArray $currInputGroups[$m]`; 
+      
+      setParent $currInputGroups[$m]; 
+      deleteUI $rows[1]; 
+      deleteUI $rows[2];       
+      
+      string $newRow = `rowLayout -nc ($numSampleDimensions+1)` ;
+      setParent $newRow;  
+      // get correct index from sparse array
+      int $p = 0; 
+      int $columnWidth = ($AEWidth - 30)/$numSampleDimensions ; 
+      
+      for ( $p=0; $p < $numSampleDimensions; $p++ ){
+        rowLayout -e -cw ($p+1) $columnWidth -cal ($p+1) "left"  $newRow; 
+        string $newFF = `floatField -w $columnWidth ` ; 
+        connectControl $newFF ( $attr + "[" + $sparseIndex + "]." + "sample" + "[" + $p + "]" );      
+        
+      }
+      rowLayout -e -cw ($numSampleDimensions+1) 30 $newRow;   // 30 pixels for rubbish bin icon  (empty for sample row)
+      
+      setParent $currInputGroups[$m];   
+      separator -width $AEWidth -height 25 ;
+      
+      string $rmvBtn = $dp_floatFields[ (size( $dp_floatFields )-1) ]; 
+      string $removeCmd = "removeRowAE(\"" + $attr + "\", \"" + $rmvBtn + "\" ); "  ; 
+      symbolButton -e -c $removeCmd $rmvBtn ; 
+      
+      
+    }
+      
+    
+  }
+    
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

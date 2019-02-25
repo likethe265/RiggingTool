@@ -1,0 +1,366 @@
+<?xml version="1.0" ?>
+<Facial_Rig>
+	<SampleGroupList> 
+		<FB_Jaw_SPGrp 			controller="FB_Jaw_CTL">
+			<SamplePoseList>
+				<AU26_JawDrop 	/>
+				<AU06_CheekRaiser_L 	/>
+				<AU06_CheekRaiser_R 	/>
+				<AU17_ChinRaiser 		/>
+				<AU26_JawDrop_Closed 	/>
+				<AU26_JawSide_L 		/>
+				<AU26_JawSide_R 		/>
+				<AU99_LipCheekRaiser_L 	/>
+				<AU99_LipCheekRaiser_R 	/>
+				<AU12_LipCornerPuller_R_Closed 	mode = "Multiply"/>
+				<AU12_LipCornerPuller_L_Closed 	mode = "Multiply"/>
+				<AU10_LowLipRaiser_M 			mode = "Multiply"/>
+				<AU10_LowLipRaiserUpLip_M 		mode = "Multiply"/>
+				<AU10_LowLipRaiser_Out_M 		mode = "Multiply"/>
+			</SamplePoseList>
+
+			<AttributePoseList>
+				<AU26_JawDrop_Closed   		mode = "Multiply"/>
+				<AU26_JawDrop 				mode = "Multiply"/>
+			</AttributePoseList>
+
+			<SampleList>   
+				<FB_LipCheekRaiser_SP		tx="0.0" 	ty="1.0" 	tz="0.0">
+					<AU06_CheekRaiser_L 	remapTo = "0.0, 0.5"/>
+					<AU06_CheekRaiser_R 	remapTo = "0.0, 0.5"/>
+					<AU17_ChinRaiser 		remapTo = "0.0, 0.3"/>
+					<AU99_LipCheekRaiser_L 	/>
+					<AU99_LipCheekRaiser_R 	/>
+				</FB_LipCheekRaiser_SP>
+				<FB_LipCheekRaiser_L_SP		tx="1" 		ty="1.0"	tz="0.0">
+					<AU06_CheekRaiser_L 	remapTo = "0.0, 0.5"/>
+					<AU06_CheekRaiser_R 	remapTo = "0.0, 0.25"/>
+					<AU17_ChinRaiser 		remapTo = "0.0, 0.3"/>
+					<AU26_JawSide_L 		/>
+					<AU99_LipCheekRaiser_L 	/>
+				</FB_LipCheekRaiser_L_SP>
+				<FB_LipCheekRaiser_R_SP		tx="-1" 	ty="1.0"	tz="0.0">
+					<AU06_CheekRaiser_L 	remapTo = "0.0, 0.25"/>
+					<AU06_CheekRaiser_R 	remapTo = "0.0, 0.5"/>
+					<AU17_ChinRaiser 		remapTo = "0.0, 0.3"/>
+					<AU26_JawSide_R 		/>
+					<AU99_LipCheekRaiser_R 	/>
+				</FB_LipCheekRaiser_R_SP>		
+				<FB_JawDropSide_L_SP		tx="1" 		ty="-2.0" 	tz="0.0">
+					<AU26_JawDrop 			/>
+					<AU26_JawDrop_Closed 	/>
+					<AU26_JawSide_L 		/>
+					<AU12_LipCornerPuller_R_Closed 	remapTo = "1.0, 0.7"/>
+					<AU12_LipCornerPuller_L_Closed 	remapTo = "1.0, 0.7"/>
+					<AU10_LowLipRaiser_M 			remapTo = "1.0, 0.5"/>
+					<AU10_LowLipRaiser_Out_M 		remapTo = "1.0, 0.5"/>
+				</FB_JawDropSide_L_SP>
+				<FB_JawDropSide_R_SP		tx="-1" 	ty="-2.0" 	tz="0.0">
+					<AU26_JawDrop 			/>
+					<AU26_JawDrop_Closed 	/>
+					<AU26_JawSide_R 		/>
+					<AU12_LipCornerPuller_R_Closed 	remapTo = "1.0, 0.7"/>
+					<AU12_LipCornerPuller_L_Closed 	remapTo = "1.0, 0.7"/>
+					<AU10_LowLipRaiser_M 			remapTo = "1.0, 0.5"/>
+					<AU10_LowLipRaiser_Out_M 		remapTo = "1.0, 0.5"/>
+				</FB_JawDropSide_R_SP>
+				<FB_JawDrop_SP 				tx="0.0" 	ty="-2.0" 	tz="0.0">
+					<AU26_JawDrop 			/>
+					<AU26_JawDrop_Closed 	/>
+					<AU12_LipCornerPuller_R_Closed 	remapTo = "1.0, 0.7"/>
+					<AU12_LipCornerPuller_L_Closed 	remapTo = "1.0, 0.7"/>
+					<AU10_LowLipRaiser_M 			remapTo = "1.0, 0.5"/>
+					<AU10_LowLipRaiser_Out_M 		remapTo = "1.0, 0.5"/>
+				</FB_JawDrop_SP>
+				<FB_JawSide_L_SP 			tx="1.0" 	ty="0.0" 	tz="0.0">
+					<AU26_JawSide_L 		/>
+				</FB_JawSide_L_SP>
+				<FB_JawSide_R_SP 			tx="-1.0" 	ty="0.0" 	tz="0.0">
+					<AU26_JawSide_R 		/>
+				</FB_JawSide_R_SP>
+			</SampleList>
+
+			<AttributeList>
+				<JawDropClosed>
+					<AU26_JawDrop_Closed 			remapTo = "0.0, 1.0"/>
+					<AU26_JawDrop 					remapTo = "1.0, 0.0"/>
+				</JawDropClosed>
+			</AttributeList>
+		</FB_Jaw_SPGrp>
+
+		<FB_LipCorner_L_SPGrp 	controller = "FB_LipCorner_L_CTL">
+			<SamplePoseList>
+				<AU15_LipCornerDepressor_L 			/>
+				<AU20_LipStretcher_L 				/>
+				<AU12_LipCornerPuller_L_Closed 		/>
+				<AU14_Dimpler_L 					/>
+				<AU99_LipCheekRaiser_L 			mode = "Multiply" />
+				<AU10_UpLipRaiser_L 			mode = "Multiply" />
+				<AU10_LowLipRaiser_M 			mode = "Multiply" />
+				<AU10_LowLipRaiserUpLip_M 		mode = "Multiply" />
+			</SamplePoseList>
+			<SampleList>
+				<FB_LipCornerDepressor_L_SP			tx="0.0" 	ty="-1.0" 	tz="0.0">
+					<AU15_LipCornerDepressor_L />
+				</FB_LipCornerDepressor_L_SP>
+				<FB_LipCornerStretcher_L_SP			tx="1.0"	ty="-1.0" 	tz="0.0">
+					<AU20_LipStretcher_L />
+					<AU10_UpLipRaiser_L 			remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiser_M 			remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiserUpLip_M 		remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiser_Out_M 		remapTo = "1.0, 0.5"	/>
+				</FB_LipCornerStretcher_L_SP>
+				<FB_LipCornerPuller_L_SP			tx="1.0" 	ty="1.0"	tz="0.0">
+					<AU12_LipCornerPuller_L_Closed />
+					<AU99_LipCheekRaiser_L  		remapTo = "1.0, 0.0"	/>
+					<AU10_UpLipRaiser_L 			remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiser_M 			remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiserUpLip_M 		remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiser_Out_M 		remapTo = "1.0, 0.5"	/>
+				</FB_LipCornerPuller_L_SP>
+				<FB_Dimpler_L_SP					tx="0.0"	ty="0.0" 	tz="-1.0">
+					<AU14_Dimpler_L/>
+				</FB_Dimpler_L_SP>
+			</SampleList>
+			<ConstraintPoseList   pointIndex = "155" offset = "[0, 0, 0.5]">
+				<AU26_JawDrop_Closed/>
+				<AU26_JawDrop/>
+				<AU26_JawSide_L/>
+				<AU26_JawSide_R/>
+				<AU99_LipCheekRaiser_L/>
+				<AU99_LipCheekRaiser_R/>
+			</ConstraintPoseList>
+		</FB_LipCorner_L_SPGrp>
+
+		<FB_LipCorner_R_SPGrp 	controller = "FB_LipCorner_R_CTL">
+			<SamplePoseList>
+				<AU15_LipCornerDepressor_R 			/>
+				<AU20_LipStretcher_R 				/>
+				<AU12_LipCornerPuller_R_Closed 		/>
+				<AU14_Dimpler_R 					/>
+				<AU99_LipCheekRaiser_R 			mode = "Multiply" />
+				<AU10_UpLipRaiser_R 			mode = "Multiply" />
+				<AU10_LowLipRaiser_M 			mode = "Multiply" />
+				<AU10_LowLipRaiserUpLip_M 		mode = "Multiply" />
+				<AU10_LowLipRaiser_Out_M 		mode = "Multiply" />
+			</SamplePoseList>
+			<SampleList>
+				<FB_LipCornerDepressor_R_SP			tx="0.0" 	ty="-1.0" 	tz="0.0">
+					<AU15_LipCornerDepressor_R />
+				</FB_LipCornerDepressor_R_SP>
+				<FB_LipCornerStretcher_R_SP			tx="-1.0"	ty="-1.0" 	tz="0.0">
+					<AU20_LipStretcher_R />
+					<AU10_LowLipRaiser_M 			remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiserUpLip_M 		remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiser_Out_M 		remapTo = "1.0, 0.5"	/>
+				</FB_LipCornerStretcher_R_SP>
+				<FB_LipCornerPuller_R_SP			tx="-1.0"	ty="1.0"	tz="0.0">
+					<AU12_LipCornerPuller_R_Closed />
+					<AU99_LipCheekRaiser_R  		remapTo = "1.0, 0.0"	/>
+					<AU10_UpLipRaiser_R 			remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiser_M 			remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiserUpLip_M 		remapTo = "1.0, 0.5"	/>
+					<AU10_LowLipRaiser_Out_M 		remapTo = "1.0, 0.5"	/>
+				</FB_LipCornerPuller_R_SP>
+				<FB_Dimpler_R_SP					tx="0.0"	ty="0.0" 	tz="-1.0">
+					<AU14_Dimpler_R />
+				</FB_Dimpler_R_SP>
+			</SampleList>
+			<ConstraintPoseList   pointIndex = "3263" offset = "[0, 0, 0.5]">
+				<AU26_JawDrop_Closed/>
+				<AU26_JawDrop/>
+				<AU26_JawSide_L/>
+				<AU26_JawSide_R/>
+				<AU99_LipCheekRaiser_L/>
+				<AU99_LipCheekRaiser_R/>
+			</ConstraintPoseList>
+		</FB_LipCorner_R_SPGrp>
+
+		<FB_CheekRaiser_L_SPGrp	controller = "FB_CheekRaiser_L_CTL">
+			<SamplePoseList>
+				<AU06_CheekRaiser_L		/>
+				<AU07_LidTightener_L	/>
+			</SamplePoseList>
+			<SampleList>
+				<FB_CheekRaiser_L_SP 				tx = "0.0"	ty = "1.0"	tz="0.0">
+					<AU06_CheekRaiser_L />
+					<AU07_LidTightener_L 	remapTo = "0.0, 0.5"/>
+				</FB_CheekRaiser_L_SP>
+			</SampleList>
+		</FB_CheekRaiser_L_SPGrp>
+
+
+		<FB_CheekRaiser_R_SPGrp	controller = "FB_CheekRaiser_R_CTL">
+			<SamplePoseList>
+				<AU06_CheekRaiser_R		/>
+				<AU07_LidTightener_R	/>
+			</SamplePoseList>
+			<SampleList>
+				<FB_CheekRaiser_R_SP 			tx = "0.0"	ty = "1.0"	tz="0.0">
+					<AU06_CheekRaiser_R />
+					<AU07_LidTightener_R 	remapTo = "0.0, 0.5"/>
+				</FB_CheekRaiser_R_SP>
+			</SampleList>
+		</FB_CheekRaiser_R_SPGrp>
+
+
+		<FB_LowLip_SPGrp		controller = "FB_LowLip_CTL">
+			<SamplePoseList>
+				<AU10_LowLipRaiser_M 		 />
+				<AU10_LowLipRaiserUpLip_M 	 />
+				<AU10_LowLipRaiser_Out_M 	 />
+			</SamplePoseList>
+
+			<AttributePoseList>
+				<AU10_LowLipRaiser_M   		mode = "Multiply"/>
+				<AU10_LowLipRaiserUpLip_M 	mode = "Multiply"/>
+				<AU10_LowLipRaiser_Out_M 	mode = "Multiply"/>
+			</AttributePoseList>
+
+			<SampleList>
+				<FB_LowLipRaiser_M_SP 			tx="0.0" 	ty="0.5" 	tz="0.0">
+					<AU10_LowLipRaiser_M 		remapTo = "0.0, 0.6"/>
+					<AU10_LowLipRaiserUpLip_M 	remapTo = "0.0, 0.6"/>
+					<AU10_LowLipRaiser_Out_M  	/>
+				</FB_LowLipRaiser_M_SP>
+			</SampleList>
+
+			<AttributeList>
+				<LowLipRaiseOut>
+					<AU10_LowLipRaiser_M 		remapTo = "1.0, 0.0"/>
+					<AU10_LowLipRaiserUpLip_M	remapTo = "1.0, 0.0"/>
+					<AU10_LowLipRaiser_Out_M 	remapTo = "0.0, 1.0"/>
+				</LowLipRaiseOut>
+			</AttributeList>
+
+			<ConstraintPoseList   pointIndex = "2837" offset = "[0, 0, 0.5]">
+				<AU26_JawDrop_Closed/>
+				<AU26_JawDrop/>
+				<AU26_JawSide_L/>
+				<AU26_JawSide_R/>
+				<AU99_LipCheekRaiser_L/>
+				<AU99_LipCheekRaiser_R/>
+				<AU12_LipCornerPuller_L_Closed/>
+				<AU12_LipCornerPuller_R_Closed/>
+				<AU20_LipStretcher_L/>
+				<AU20_LipStretcher_R/>
+				<AU15_LipCornerDepressor_L/>
+				<AU15_LipCornerDepressor_R/>
+
+			</ConstraintPoseList>
+		</FB_LowLip_SPGrp>
+
+
+		<FB_UpLip_L_SPGrp 	controller = "FB_UpLip_L_CTL">
+			<SamplePoseList>
+				<AU10_UpLipRaiser_L 	 />
+				<AU06_CheekRaiser_L  	 />
+				<AU10_LowLipRaiserUpLip_M    mode = "Multiply"/>
+			</SamplePoseList>
+			<SampleList>
+				<FB_UpLipRaiser_L_SP 			tx="0.0" 	ty="0.5" 	tz="0.0">
+					<AU10_UpLipRaiser_L />
+					<AU06_CheekRaiser_L 	remapTo = "0.0, 0.5"/>
+					<AU10_LowLipRaiserUpLip_M 	remapTo = "1.0, 0.25"/>
+				</FB_UpLipRaiser_L_SP>
+			</SampleList>
+			<ConstraintPoseList   pointIndex = "2177" offset = "[0, 0, 0.5]">
+				<AU26_JawDrop_Closed/>
+				<AU26_JawDrop/>
+				<AU26_JawSide_L/>
+				<AU26_JawSide_R/>
+				<AU99_LipCheekRaiser_L/>
+				<AU99_LipCheekRaiser_R/>
+				<AU12_LipCornerPuller_L_Closed/>
+				<AU20_LipStretcher_L/>
+				<AU15_LipCornerDepressor_L/>
+				<AU10_LowLipRaiser_Out_M/>
+				<AU10_LowLipRaiserUpLip_M/>
+			</ConstraintPoseList>
+		</FB_UpLip_L_SPGrp>
+
+		<FB_UpLip_R_SPGrp 	controller = "FB_UpLip_R_CTL">
+			<SamplePoseList>
+				<AU10_UpLipRaiser_R 	 />
+				<AU06_CheekRaiser_R  	 />
+				<AU10_LowLipRaiserUpLip_M    mode = "Multiply"/>
+			</SamplePoseList>
+			<SampleList>
+				<FB_UpLipRaiser_R_SP 			tx="0.0" 	ty="0.5" 	tz="0.0">
+					<AU10_UpLipRaiser_R 	/>
+					<AU06_CheekRaiser_R 	remapTo = "0.0, 0.5"/>
+					<AU10_LowLipRaiserUpLip_M 	remapTo = "1.0, 0.25"/>
+				</FB_UpLipRaiser_R_SP>
+			</SampleList>
+			<ConstraintPoseList   pointIndex = "5304" offset = "[0, 0, 0.5]">
+				<AU26_JawDrop_Closed/>
+				<AU26_JawDrop/>
+				<AU26_JawSide_L/>
+				<AU26_JawSide_R/>
+				<AU99_LipCheekRaiser_L/>
+				<AU99_LipCheekRaiser_R/>
+				<AU12_LipCornerPuller_R_Closed/>
+				<AU20_LipStretcher_R/>
+				<AU15_LipCornerDepressor_R/>
+				<AU10_LowLipRaiser_Out_M/>
+				<AU10_LowLipRaiserUpLip_M/>
+			</ConstraintPoseList>
+		</FB_UpLip_R_SPGrp>
+	</SampleGroupList>
+
+	<CorrectivePose>
+		<CR01_JawDrop_LipRaiser >
+			<AU26_JawDrop_Closed 		remapTo = "0.5, 1.0"/>
+			<AU10_LowLipRaiser_Out_M 	remapTo = "0.5, 1.0"/>
+		</CR01_JawDrop_LipRaiser>
+	</CorrectivePose>
+
+	<Poses>
+		<AU06_CheekRaiser_L/>
+		<AU06_CheekRaiser_R/>
+		<AU07_LidTightener_L/>
+		<AU07_LidTightener_R/>
+		<AU10_LowLipRaiser_Out_M/>
+		<AU10_LowLipRaiser_In_M/>
+		<AU10_LowLipRaiser_M/>
+		<AU10_LowLipRaiserUpLip_M/>
+		<AU10_LowLipRaiser_Out_L/>
+		<AU10_UpLipRaiser_M/>
+		<AU10_UpLipRaiser_Sticky_M/>
+		<AU10_LowLipRaiser_L/>
+		<AU10_UpLipRaiser_L/>
+		<AU10_UpLipRaiser_R/>
+		<AU12_LipCornerPuller_L_Closed/>
+		<AU12_LipCornerPuller_R_Closed/>
+		<AU13_CheekPuffer/>
+		<AU14_Dimpler_L/>
+		<AU14_Dimpler_R/>
+		<AU15_LipCornerDepressor_L/>
+		<AU15_LipCornerDepressor_R/>
+		<AU17_ChinRaiser/>
+		<AU18_LipPuckerer_Raiser/>
+		<AU18_LipPuckerer/>
+		<AU20_LipStretcher_L/> 
+		<AU20_LipStretcher_R/> 
+		<AU22_LipFunneler/>
+		<AU23_LipTightener/>
+		<AU25_LowLipPart_M/>
+		<AU25_LowLipPart_M_Sticky/>
+		<AU25_LowLipPart_L/>
+		<AU26_JawDrop/>
+		<AU26_JawDrop_Closed/>
+		<AU26_JawDropBack/>
+		<AU26_JawBack/>
+		<AU26_JawThrust/>
+		<AU26_JawSide_L/>
+		<AU26_JawSide_R/>
+		<AU27_MouthStretch/>
+		<AU28_UpLipSuck/>
+		<AU28_LowLipSuck/>
+		<AU99_LipCheekRaiser_L/>
+		<AU99_LipCheekRaiser_R/>
+	</Poses>
+
+	<Joints/>
+
+</Facial_Rig> 
