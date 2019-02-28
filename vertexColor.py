@@ -15,7 +15,7 @@ def getSelectedMeshFn():
     mesh_MPointArray = OpenMaya.MPointArray()
     selection = OpenMaya.MGlobal.getActiveSelectionList()
     meshDagPath = selection.getDagPath(0)
-    return maya.api.OpenMaya.MFnMesh(meshDagPath)
+    return OpenMaya.MFnMesh(meshDagPath)
 
 def serializeColor(mayaColors):
     colsSerilizable = []
@@ -29,12 +29,12 @@ def deserializeColor(colors):
         mayaColors.append(OpenMaya.MColor(eval(col)))
     return mayaColors
 
-def saveVColor(slotName, dagName):
+def saveVColor(slotName, dagName, rootDic):
     # mesh_MPointArray = OpenMaya.MPointArray()
     # selection = OpenMaya.MGlobal.getActiveSelectionList()
     # meshDagPath = selection.getDagPath(0)
     dagpath = mdagpath_from_name(dagName)
-    meshFn = maya.api.OpenMaya.MFnMesh(dagpath)
+    meshFn = OpenMaya.MFnMesh(dagpath)
     colors = []
     try:
         colors = meshFn.getVertexColors()
@@ -47,12 +47,12 @@ def saveVColor(slotName, dagName):
         json.dump(serializeColor(colors), outfile)
 
 
-def loadVColor(slotName, dagName):
+def loadVColor(slotName, dagName, rootDic):
     # mesh_MPointArray = OpenMaya.MPointArray()
     # selection = OpenMaya.MGlobal.getActiveSelectionList()
     # meshDagPath = selection.getDagPath(0)
     dagpath = mdagpath_from_name(dagName)
-    meshFn = maya.api.OpenMaya.MFnMesh(dagpath)
+    meshFn = OpenMaya.MFnMesh(dagpath)
     # read colors into file
     with open(rootDic + '/data/vcol/{0}.vcol'.format(slotName)) as json_file:
         colors = json.load(json_file)
@@ -61,11 +61,11 @@ def loadVColor(slotName, dagName):
 def compose():
     currentMFn = getSelectedMeshFn()
     dagpath = mdagpath_from_name('NeturalPoseBackupShape')  #Todo: replace the hardcoded name
-    neturalMeshFn = maya.api.OpenMaya.MFnMesh(dagpath)
+    neturalMeshFn = OpenMaya.MFnMesh(dagpath)
     duObj = pm.duplicate()
     duObj[0].tx.set(duObj[0].tx.get() + 15) #to offset the duplicated pose a little bit for better finding.
     dagpath = mdagpath_from_name(duObj[0].nodeName())
-    DuMeshFn = maya.api.OpenMaya.MFnMesh(dagpath)
+    DuMeshFn = OpenMaya.MFnMesh(dagpath)
     mesh_MPointArray = DuMeshFn.getPoints(OpenMaya.MSpace.kObject)
     weightList = neturalMeshFn.getVertexColors()
     for i, key in enumerate(mesh_MPointArray):

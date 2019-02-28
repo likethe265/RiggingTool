@@ -7,7 +7,7 @@ def invertX(point):
     point.x *= -1
     return point
 
-def mirrorSelected():
+def mirrorSelected(rootDic):
     with open(rootDic + '/data/topoMap.tpmap') as json_file:
         data = json.load(json_file)
 

@@ -8,10 +8,7 @@ from pymel.all import *
 import maya.cmds as cmd
 
 namespace = ''
-
-
-sys.path.append('D:\OneDrive\ToyLabsP4v')
-sys.path.append('D:\OneDrive\ToyLabsP4v\FacialRigger')
+rootDic = 'E:\Pojects\Eve\Rigging\RiggingTool'
 
 class Facial:
     name = ""
@@ -21,9 +18,9 @@ class Facial:
     rootJoint = 0
 
 
-    riggingFilePath = 'D:\\OneDrive\\ToyLabsP4v\\FacialRig\\Maya\\Main\\rigging.xml'
-    poseFilePath = 'D:\\OneDrive\\ToyLabsP4v\\FacialRig\\Maya\\Main\\pose.xml'
-    fbrFilePath = 'D:\\OneDrive\\ToyLabsP4v\\FacialRig\\Maya\\Main\\Head.xml'
+    riggingFilePath = rootDic + '/rigging.xml'
+    poseFilePath = rootDic + '/pose.xml'
+    fbrFilePath = rootDic + '/Head.xml'
 
 
     jointManager = 0

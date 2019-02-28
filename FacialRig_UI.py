@@ -1,14 +1,12 @@
 import sys
-
-
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from functools import partial
 
 import pymel.core as pm
 import re
-rootDicionary = 'D:\\OneDrive\\ToyLabsP4v\\FacialRig\\Maya\\Main'
-sys.path.append(rootDicionary)
+rootDic = 'E:\Pojects\Eve\Rigging\RiggingTool'
+sys.path.append(rootDic)
 
 
 import RigBuilder as rb
@@ -50,9 +48,6 @@ class WidgetHierarchyTree(MayaQWidgetBaseMixin, QWidget):
     etSampleSearch = 0
     facial = 0
     poseInEdit = 0
-
-    pickStandardPose = 0
-    mirrorPose = 0
 
     def __init__(self, *args, **kwargs):
         super(WidgetHierarchyTree, self).__init__(*args, **kwargs)
@@ -127,9 +122,6 @@ class WidgetHierarchyTree(MayaQWidgetBaseMixin, QWidget):
         self.lvAttributeList = QListWidget()
         self.lvControllerList = QListWidget()
 
-        self.pickStandardPose = QPushButton("Pick Standard Pose")
-        self.mirrorPose = QPushButton("Mirror Picked Pose")
-
         lyPoseManage = QHBoxLayout()
         lyPoseManage.addWidget(self.cbOverrideMode)
         lyPoseManage.addWidget(self.cbPoseFilterBySample)
@@ -171,9 +163,6 @@ class WidgetHierarchyTree(MayaQWidgetBaseMixin, QWidget):
         lyPose.addLayout(lyPoseManage)
         lyPose.addWidget(self.etPoseSearch)
         lyPose.addWidget(self.lvPoseList)
-# useful tools to deal with the poses
-        lyTool.addWidget(self.pickStandardPose)
-        lyTool.addWidget(self.mirrorPose)
 
 
         lyRoot.addLayout(lyMain)

@@ -2,24 +2,15 @@ import sys
 from PySide2.QtWidgets import *
 from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
 import os
-rootDicionary = './'
-sys.path.append(rootDicionary)
+rootDic = 'E:\Pojects\Eve\Rigging\RiggingTool'
+sys.path.append(rootDic)
 import vertexColor
+reload(vertexColor)
 import mirrorSelectedPos
-import rootDirectory
+reload(mirrorSelectedPos)
+# import rootDirectory
 
 pNetrualPose = "NeturalPoseBackupShape"
-
-class Ui_Dialog(QtWidgets.QDialog):
-
-    def __init__(self, parent=None):
-        super(Ui_Dialog, self).__init__(parent)
-        self.p = parent
-        self.setupUi(self)
-
-    def setupUi(self, Dialog1):
-        Dialog1.setObjectName("Dialog1")
-        Dialog1.resize(333, 173)
 
 class ToolBag(MayaQWidgetBaseMixin, QWidget):
 # widget declaration
@@ -89,19 +80,19 @@ class ToolBag(MayaQWidgetBaseMixin, QWidget):
         gui = QWidget()
         text, ok = QInputDialog.getText(gui, "Save color plan", "Input the name of the Vertex Color plan:")
         if ok and text:
-            saveVColor(text, pNetrualPose)
+            vertexColor.saveVColor(text, pNetrualPose, rootDic)
             self.refreshColorPlanComboBox(text)
 
     def onClickLoadVertexColor(self):
         poseName = self.qComboVCList.currentText()
-        loadVColor(poseName, pNetrualPose)
+        vertexColor.loadVColor(poseName, pNetrualPose, rootDic)
         self.refreshColorPlanComboBox(poseName)
 
     def onClickCompose(self):
-        compose()
+        vertexColor.compose()
 
     def onClickBtnMirror(self):
-        mirrorSelected()
+        mirrorSelectedPos.mirrorSelected(rootDic)
 
     def refreshColorPlanComboBox(self, txt):
         self.qComboVCList.clear()
